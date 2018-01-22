@@ -1,0 +1,19 @@
+{
+  "name": "fis3-preprocessor-apm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apmjs/fis3-preprocessor-apm.git"
+  },
+  "author": "harttle <harttle@harttle.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/apmjs/fis3-preprocessor-apm/issues"
+  },
+  "homepage": "https://github.com/apmjs/fis3-preprocessor-apm#readme"
+}
