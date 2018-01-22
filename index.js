@@ -13,6 +13,7 @@ const index = packageIndex();
 module.exports = function (content, file, settings) {
     return content.replace(/__inline_package\(['"](.*)['"]\)/g, function (match, id) {
         let files = extractPackage(id);
+        console.log('combining files:', files, 'for', id);
         let contents = files.map(file => fs.readFileSync(file, 'utf8'));
         return contents.join('\n');
     });
@@ -35,7 +36,7 @@ function extractPackage(id) {
         throw result.error;
     }
     let graph = JSON.parse(String(result.stdout));
-    return Object.keys(graph);
+    return Object.keys(graph).map(file => path.resolve(modulePath, id, file));
 }
 
 function findModulePath() {
