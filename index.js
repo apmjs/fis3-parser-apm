@@ -14,7 +14,7 @@ const root = fis.project.getProjectPath();
 
 module.exports = function (content, file, settings) {
     return content
-    .replace(/__inline_package\(['"](.*)['"]\)/g,
+    .replace(/__inlinePackage\(['"](.*)['"]\)/g,
         (match, id) => extractPackage(id)
         .map(item => `__inline("${item.relative}")`)
         .join('\n')
@@ -44,13 +44,22 @@ function getPackageEntry(id) {
 function extractPackage(id) {
     if (!cache[id]) {
         let entry = getPackageEntry(id);
-        let script = `\`npm bin\`/madge ${entry.fullpath} --json`;
+        let bin = require.resolve('madge/bin/cli');
+        let script = `${bin} ${entry.fullpath} --json`;
         let result = spawnSync('bash', ['-c', script]);
 
         if (result.status === 1) {
             throw result.error;
         }
-        let graph = JSON.parse(String(result.stdout));
+        let graph;
+        let output = String(result.stdout);
+        try {
+            graph = JSON.parse(output);
+        }
+        catch (e) {
+            e.message += 'cannot parse dependencies: ' + result.stdout;
+            throw e;
+        }
         let dirname = path.dirname(entry.fullpath);
         let files = Object
             .keys(graph)
@@ -68,7 +77,7 @@ function extractPackage(id) {
 }
 
 function findModulePath() {
-    let filepath = findPackageJson();
+    let filepath = findPackageJson(process.cwd());
     if (!filepath) {
         return path.resolve(process.cwd(), 'amd_modules');
     }
@@ -77,8 +86,7 @@ function findModulePath() {
     return path.resolve(filepath, '..', relative);
 }
 
-function findPackageJson() {
-    let dir = process.cwd();
+function findPackageJson(dir) {
     let pathname = path.resolve(dir, 'package.json');
     if (fs.existsSync(pathname)) {
         return pathname;

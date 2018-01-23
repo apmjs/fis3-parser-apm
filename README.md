@@ -12,12 +12,12 @@ fis.match('**/*.js', {
 });
 ```
 
-## __inline_package
+## __inlinePackage
 
 可以将整个包 inline 到当前文件中，例如：
 
 ```javascript
-__inline_package('foo')
+__inlinePackage('foo')
 ```
 
 Parser 会把它转换为：
