@@ -50,3 +50,31 @@ require.config({
     // ...
 })
 ```
+
+## 自定义 AMD URL
+
+require config 中的 URL 可以自定义配置，只需穿软一个 `path2url` 函数，例如：
+
+```javascript
+fis.match('**/*.js', {
+    parser: fis.plugin('apm', {
+        path2url: function (path) {
+            // path === '/amd_modules/foo/index'
+            return '/static' + path
+        }
+    })
+});
+```
+
+这样，生成的 config 如下：
+
+```javascript
+require.config({
+    'foo': '/static/amd_modules/foo',
+    'foo/index': '/static/amd_modules/foo/index',
+    'foo/lib/util': '/static/amd_modules/foo/lib/util',
+
+    'bar': '/static/amd_modules/bar',
+    // ...
+})
+```
