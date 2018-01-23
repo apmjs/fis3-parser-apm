@@ -2,8 +2,11 @@
   "name": "fis3-preprocessor-apm",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
+    "build": "babel index.js --presets babel-preset-es2015 --out-dir dist",
+    "lint": "fecs index.js",
+    "prepublish": "npm run lint && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -15,5 +18,13 @@
   "bugs": {
     "url": "https://github.com/apmjs/fis3-preprocessor-apm/issues"
   },
-  "homepage": "https://github.com/apmjs/fis3-preprocessor-apm#readme"
+  "homepage": "https://github.com/apmjs/fis3-preprocessor-apm#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "fecs": "^1.5.4"
+  },
+  "dependencies": {
+    "madge": "^3.0.0"
+  }
 }

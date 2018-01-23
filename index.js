@@ -2,20 +2,21 @@
  * @file
  * @author harttle<harttle@harttle.com>
  */
-const fs = require('fs');
-const path = require('path');
-const process = require('process');
-const madge = require('madge');
-const spawnSync = require('child_process').spawnSync;
+import fs from 'fs';
+import path from 'path';
+import process from 'process';
+import {spawnSync} from 'child_process';
+
 const modulePath = findModulePath();
 const index = packageIndex();
 
 module.exports = function (content, file, settings) {
+    let root = fis.project.getProjectPath();
     return content.replace(/__inline_package\(['"](.*)['"]\)/g, function (match, id) {
-        let files = extractPackage(id);
-        console.log('combining files:', files, 'for', id);
-        let contents = files.map(file => fs.readFileSync(file, 'utf8'));
-        return contents.join('\n');
+        return extractPackage(id)
+        .map(filepath => filepath.replace(root, ''))
+        .map(filepath => `__inline("${filepath}")`)
+        .join('\n');
     });
 };
 
@@ -36,7 +37,8 @@ function extractPackage(id) {
         throw result.error;
     }
     let graph = JSON.parse(String(result.stdout));
-    return Object.keys(graph).map(file => path.resolve(modulePath, id, file));
+    let dirname = path.dirname(filepath);
+    return Object.keys(graph).map(file => path.resolve(dirname, file));
 }
 
 function findModulePath() {
@@ -44,7 +46,7 @@ function findModulePath() {
     if (!filepath) {
         return path.resolve(process.cwd(), 'amd_modules');
     }
-    let pkg = require(filepath);
+    let pkg = loadJson(filepath);
     let modulePath = pkg.amdPrefix || 'amd_modules';
     return path.resolve(filepath, '..', modulePath);
 }
@@ -65,9 +67,12 @@ function findPackageJson() {
 
 function packageIndex() {
     let indexPath = path.resolve(modulePath, 'index.json');
-    let packages = require(indexPath);
+    let packages = loadJson(indexPath);
     let index = {};
     packages.forEach(pkg => (index[pkg.name] = pkg));
     return index;
 }
 
+function loadJson(file) {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
