@@ -1,5 +1,5 @@
 {
-  "name": "fis3-preprocessor-apm",
+  "name": "fis3-parser-apm",
   "version": "1.0.1",
   "description": "",
   "main": "dist/index.js",

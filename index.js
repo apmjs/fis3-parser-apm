@@ -9,14 +9,27 @@ import {spawnSync} from 'child_process';
 
 const modulePath = findModulePath();
 const index = packageIndex();
+const cache = {};
+const root = fis.project.getProjectPath();
 
 module.exports = function (content, file, settings) {
-    let root = fis.project.getProjectPath();
-    return content.replace(/__inline_package\(['"](.*)['"]\)/g, function (match, id) {
-        return extractPackage(id)
-        .map(filepath => filepath.replace(root, ''))
-        .map(filepath => `__inline("${filepath}")`)
-        .join('\n');
+    return content
+    .replace(/__inline_package\(['"](.*)['"]\)/g,
+        (match, id) => extractPackage(id)
+        .map(item => `__inline("${item.relative}")`)
+        .join('\n')
+    )
+    .replace(/__AMD_CONFIG/g, () => {
+        let transformer = settings.path2url || (x => x);
+        let modules = [];
+
+        Object.keys(index).forEach(key => extractPackage(key).forEach(item => {
+            item.url = transformer(item.relative);
+            modules.push(item);
+        }));
+
+        let lines = modules.map(mod => `    '${mod.id}': ${mod.url}`).join(',\n');
+        return '{\n' + lines + '\n}';
     });
 };
 
@@ -25,20 +38,33 @@ function getPackageEntry(id) {
     if (!entry) {
         throw new Error(`无法 inline 包 ${id}，是不是没安装？`);
     }
-    return entry.fullpath;
+    return entry;
 }
 
 function extractPackage(id) {
-    let filepath = getPackageEntry(id);
-    let script = `\`npm bin\`/madge ${filepath} --json`;
-    let result = spawnSync('bash', ['-c', script]);
+    if (!cache[id]) {
+        let entry = getPackageEntry(id);
+        let script = `\`npm bin\`/madge ${entry.fullpath} --json`;
+        let result = spawnSync('bash', ['-c', script]);
 
-    if (result.status === 1) {
-        throw result.error;
+        if (result.status === 1) {
+            throw result.error;
+        }
+        let graph = JSON.parse(String(result.stdout));
+        let dirname = path.dirname(entry.fullpath);
+        let files = Object
+            .keys(graph)
+            .map(file => {
+                let fullpath = path.resolve(dirname, file);
+                let relative = fullpath.replace(root, '');
+                let id = fullpath.replace(modulePath, '')
+                .replace(/^\//, '')
+                .replace(/\.js$/, '');
+                return {id, relative};
+            });
+        cache[id] = files;
     }
-    let graph = JSON.parse(String(result.stdout));
-    let dirname = path.dirname(filepath);
-    return Object.keys(graph).map(file => path.resolve(dirname, file));
+    return cache[id];
 }
 
 function findModulePath() {
@@ -47,8 +73,8 @@ function findModulePath() {
         return path.resolve(process.cwd(), 'amd_modules');
     }
     let pkg = loadJson(filepath);
-    let modulePath = pkg.amdPrefix || 'amd_modules';
-    return path.resolve(filepath, '..', modulePath);
+    let relative = pkg.amdPrefix || 'amd_modules';
+    return path.resolve(filepath, '..', relative);
 }
 
 function findPackageJson() {
