@@ -20,17 +20,17 @@ module.exports = function (content, file, settings) {
         .join('\n')
     )
     .replace(/__AMD_CONFIG/g, () => {
-        let transformer = settings.path2url || (x => x);
-        let modules = [];
+        let lines = extractAll(settings.path2url)
+        .map(item => `    '${item.id}': ${item.url}`)
+        .join(',\n');
 
-        Object.keys(index).forEach(key => extractPackage(key).forEach(item => {
-            item.url = transformer(item.relative);
-            modules.push(item);
-        }));
-
-        let lines = modules.map(mod => `    '${mod.id}': ${mod.url}`).join(',\n');
         return '{\n' + lines + '\n}';
     });
+};
+
+module.exports.extractAll = extractAll;
+module.exports.extractAllFiles = function (transformer) {
+    return extractAll(transformer).map(item => item.relative);
 };
 
 function getPackageEntry(id) {
@@ -39,6 +39,21 @@ function getPackageEntry(id) {
         throw new Error(`无法 inline 包 ${id}，是不是没安装？`);
     }
     return entry;
+}
+
+function extractAll(transformer) {
+    let modules = [];
+    transformer = transformer || (x => x);
+
+    Object
+    .keys(index)
+    .forEach(key => extractPackage(key)
+        .forEach(item => {
+            item.url = transformer(item.relative);
+            modules.push(item);
+        })
+    );
+    return modules;
 }
 
 function extractPackage(id) {
@@ -71,6 +86,11 @@ function extractPackage(id) {
                 .replace(/\.js$/, '');
                 return {id, relative};
             });
+        files.push({
+            id,
+            relative: path.resolve(modulePath, id + '.js').replace(root, '')
+        });
+
         cache[id] = files;
     }
     return cache[id];

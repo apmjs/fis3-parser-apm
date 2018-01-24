@@ -78,3 +78,18 @@ require.config({
     // ...
 })
 ```
+
+## .extractAllFiles
+
+为了方便发布和打包，可以提取所有被入口引用到的文件。
+
+```
+let files = require('fis3-parser-apm').extractAllFiles();
+console.log(files);
+// [
+//   '/static/amd_modules/foo.js',
+//   '/static/amd_modules/foo/index.js',
+//   '/static/amd_modules/foo/lib/util.js',
+//   ...
+// ]
+```
