@@ -6,7 +6,7 @@
   "scripts": {
     "build": "babel index.js --presets babel-preset-es2015 --out-dir dist",
     "lint": "fecs index.js",
-    "prepublish": "npm run lint && npm run build",
+    "preversion": "npm run lint && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
