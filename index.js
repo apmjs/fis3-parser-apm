@@ -64,7 +64,7 @@ function extractPackage(id) {
         let result = spawnSync('bash', ['-c', script]);
 
         if (result.status === 1) {
-            throw result.error;
+            throw result.error || new Error(String(result.stdout))
         }
         let graph;
         let output = String(result.stdout);
@@ -88,7 +88,7 @@ function extractPackage(id) {
             });
         files.push({
             id,
-            relative: path.resolve(modulePath, id + '.js').replace(root, '')
+            relative: JSON.stringify(path.resolve(modulePath, id + '.js').replace(root, ''))
         });
 
         cache[id] = files;
