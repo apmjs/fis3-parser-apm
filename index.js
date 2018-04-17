@@ -16,7 +16,7 @@ module.exports = function (content, file, settings) {
     return content
     .replace(/__inlinePackage\(['"](.*)['"]\)/g,
         (match, id) => extractPackage(id)
-        .map(item => `__inline("${item.relative}")`)
+        .map(item => '__inline(' + JSON.stringify(item.relative) + ')')
         .join('\n')
     )
     .replace(/__AMD_CONFIG/g, () => {
@@ -88,7 +88,7 @@ function extractPackage(id) {
             });
         files.push({
             id,
-            relative: JSON.stringify(path.resolve(modulePath, id + '.js').replace(root, ''))
+            relative: path.resolve(modulePath, id + '.js').replace(root, '')
         });
 
         cache[id] = files;
