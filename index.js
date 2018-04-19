@@ -1,22 +1,25 @@
 /**
  * @file
- * @author harttle<harttle@harttle.com>
+ * @author harttle<yangjvn@126.com>
  */
 import fs from 'fs';
 import path from 'path';
 import process from 'process';
 import {spawnSync} from 'child_process';
 
-const modulePath = findModulePath();
-const index = packageIndex();
-const cache = {};
-const root = fis.project.getProjectPath();
+let modulePath;
+let index;
+let cache;
+let projectPath;
 
 module.exports = function (content, file, settings) {
+    if (!modulePath) {
+        module.exports.setRoot(process.cwd(), fis.project.getProjectPath());
+    }
     return content
     .replace(/__inlinePackage\(['"](.*)['"]\)/g,
         (match, id) => extractPackage(id)
-        .map(item => '__inline(' + JSON.stringify(item.relative) + ')')
+        .map(item => '__inline(' + JSON.stringify(item.relative) + ');')
         .join('\n')
     )
     .replace(/__AMD_CONFIG/g, () => {
@@ -28,10 +31,16 @@ module.exports = function (content, file, settings) {
     });
 };
 
-module.exports.extractAll = extractAll;
-module.exports.extractAllFiles = function (transformer) {
-    return extractAll(transformer).map(item => item.relative);
+module.exports.setRoot = function (cwd, pathname) {
+    cache = {};
+    modulePath = findModulePath(cwd);
+    index = packageIndex();
+    projectPath = pathname;
 };
+
+function extractAllFiles(transformer) {
+    return extractAll(transformer).map(item => item.relative);
+}
 
 function getPackageEntry(id) {
     let entry = index[id];
@@ -43,7 +52,7 @@ function getPackageEntry(id) {
 
 function extractAll(transformer) {
     let modules = [];
-    transformer = transformer || (x => x);
+    transformer = transformer || (x => JSON.stringify(x.replace(/\.js$/, '')));
 
     Object
     .keys(index)
@@ -60,11 +69,10 @@ function extractPackage(id) {
     if (!cache[id]) {
         let entry = getPackageEntry(id);
         let bin = require.resolve('madge/bin/cli');
-        let script = `${bin} ${entry.fullpath} --json`;
-        let result = spawnSync('bash', ['-c', script]);
+        let result = spawnSync('node', [bin, entry.fullpath, '--json']);
 
         if (result.status === 1) {
-            throw result.error || new Error(String(result.stdout))
+            throw result.error || new Error(String(result.stderr));
         }
         let graph;
         let output = String(result.stdout);
@@ -80,7 +88,7 @@ function extractPackage(id) {
             .keys(graph)
             .map(file => {
                 let fullpath = path.resolve(dirname, file);
-                let relative = fullpath.replace(root, '');
+                let relative = fullpath.replace(projectPath, '');
                 let id = fullpath.replace(modulePath, '')
                 .replace(/^\//, '')
                 .replace(/\.js$/, '');
@@ -88,7 +96,7 @@ function extractPackage(id) {
             });
         files.push({
             id,
-            relative: path.resolve(modulePath, id + '.js').replace(root, '')
+            relative: path.resolve(modulePath, id + '.js').replace(projectPath, '')
         });
 
         cache[id] = files;
@@ -96,12 +104,12 @@ function extractPackage(id) {
     return cache[id];
 }
 
-function findModulePath() {
-    let filepath = findPackageJson(process.cwd());
+function findModulePath(cwd) {
+    let filepath = findPackageJson(cwd);
     if (!filepath) {
-        return path.resolve(process.cwd(), 'amd_modules');
+        return path.resolve(cwd, 'amd_modules');
     }
-    let pkg = loadJson(filepath);
+    let pkg = module.exports.loadJson(filepath);
     let relative = pkg.amdPrefix || 'amd_modules';
     return path.resolve(filepath, '..', relative);
 }
@@ -112,7 +120,6 @@ function findPackageJson(dir) {
         return pathname;
     }
     let parent = path.resolve(dir, '..');
-    // root exceeded
     if (parent === dir) {
         return null;
     }
@@ -121,7 +128,7 @@ function findPackageJson(dir) {
 
 function packageIndex() {
     let indexPath = path.resolve(modulePath, 'index.json');
-    let packages = loadJson(indexPath);
+    let packages = module.exports.loadJson(indexPath);
     let index = {};
     packages.forEach(pkg => (index[pkg.name] = pkg));
     return index;
@@ -130,3 +137,7 @@ function packageIndex() {
 function loadJson(file) {
     return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
+
+module.exports.extractAll = extractAll;
+module.exports.loadJson = loadJson;
+module.exports.extractAllFiles = extractAllFiles;
