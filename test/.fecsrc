@@ -1,0 +1,13 @@
+{
+    'eslint': {
+        'env': {
+            'browser': true
+        },
+        'globals': {
+            'before': true,
+            'after': true
+        },
+        'rules': {
+        }
+    }
+}

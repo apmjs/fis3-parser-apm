@@ -4,16 +4,16 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "build": "babel index.js --presets babel-preset-es2015 --out-dir dist",
-    "lint": "fecs index.js",
+    "build": "babel index.js --out-dir dist",
+    "lint": "fecs index.js test/",
     "preversion": "npm run lint && npm run build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test --require babel-register --require babel-polyfill"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/apmjs/fis3-preprocessor-apm.git"
   },
-  "author": "harttle <harttle@harttle.com>",
+  "author": "harttle <harttle@126.com>",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/apmjs/fis3-preprocessor-apm/issues"
@@ -22,6 +22,9 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-es2015": "^6.24.1",
+    "mocha": "^4.0.0",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
     "fecs": "^1.5.4"
   },
   "dependencies": {
