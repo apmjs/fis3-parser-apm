@@ -95,15 +95,16 @@ function extractPackage(id) {
                 .replace(projectPath, '')
                 .replace(pathSep, '/');
                 let id = fullpath.replace(modulePath, '')
-                .replace(/^\//, '')
                 .replace(/\.js$/, '')
-                .replace(pathSep, '/');
+                .replace(pathSep, '/')
+                .replace(/^\//, '');
                 return {id, relative};
             });
         let entryFile = path
             .resolve(modulePath, id + '.js')
             .replace(projectPath, '')
             .replace(pathSep, '/');
+
         files.push({
             id,
             relative: entryFile

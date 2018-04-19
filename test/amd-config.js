@@ -26,7 +26,8 @@ describe('__AMD_CONFIG', function () {
         parser.loadJson = originLoadJson;
     });
     it('should generate AMD config', function () {
-        parser.setRoot(STUB_DIR + '/simple', STUB_DIR + '/simple');
+        var cwd = path.resolve(STUB_DIR, 'simple');
+        parser.setRoot(cwd, cwd);
         let src = '__AMD_CONFIG';
         let result = parser(src, null, {});
         expect(result).to.equal(`{
@@ -35,7 +36,8 @@ describe('__AMD_CONFIG', function () {
 }`);
     });
     it('should respect to amdPrefix', function () {
-        parser.setRoot(STUB_DIR + '/prefixed', STUB_DIR + '/prefixed');
+        var cwd = path.resolve(STUB_DIR, 'prefixed');
+        parser.setRoot(cwd, cwd);
         let src = '__AMD_CONFIG';
         let result = parser(src, null, {});
         expect(result).to.equal(`{
@@ -44,7 +46,8 @@ describe('__AMD_CONFIG', function () {
 }`);
     });
     it('should respect to path2url', function () {
-        parser.setRoot(STUB_DIR + '/simple', STUB_DIR + '/simple');
+        var cwd = path.resolve(STUB_DIR, 'simple');
+        parser.setRoot(cwd, cwd);
         let src = '__AMD_CONFIG';
         let path2url = x => '"http://example.org/assets' + x.replace('.js', '') + '"';
         let result = parser(src, null, {path2url});

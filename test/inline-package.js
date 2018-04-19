@@ -26,7 +26,8 @@ describe('__inlinePackage', function () {
         parser.loadJson = originLoadJson;
     });
     it('should __inline the all files required', function () {
-        parser.setRoot(STUB_DIR + '/multiple-files', STUB_DIR + '/multiple-files');
+        var cwd = path.resolve(STUB_DIR, 'multiple-files');
+        parser.setRoot(cwd, cwd);
         let src = '__inlinePackage("foo")';
         let result = parser(src, null, {});
 

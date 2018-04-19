@@ -26,7 +26,8 @@ describe('#extractAll', function () {
         parser.loadJson = originLoadJson;
     });
     it('should include AMD entry file', function () {
-        parser.setRoot(STUB_DIR + '/simple', STUB_DIR + '/simple');
+        var cwd = path.resolve(STUB_DIR, 'simple');
+        parser.setRoot(cwd, cwd);
         let result = parser.extractAll();
         expect(result).to.have.lengthOf(2);
         expect(result[0]).to.deep.equal({
@@ -41,7 +42,8 @@ describe('#extractAll', function () {
         });
     });
     it('should respect to amdPrefix', function () {
-        parser.setRoot(STUB_DIR + '/prefixed', STUB_DIR + '/prefixed');
+        var cwd = path.resolve(STUB_DIR, 'prefixed');
+        parser.setRoot(cwd, cwd);
         let result = parser.extractAll();
         expect(result).to.have.lengthOf(2);
         expect(result[0]).to.deep.equal({
@@ -56,7 +58,8 @@ describe('#extractAll', function () {
         });
     });
     it('should include multiple packages', function () {
-        parser.setRoot(STUB_DIR + '/multiple', STUB_DIR + '/multiple');
+        var cwd = path.resolve(STUB_DIR, 'multiple');
+        parser.setRoot(cwd, cwd);
         let result = parser.extractAll();
         expect(result).to.have.lengthOf(6);
         expect(result[0]).to.have.property('id', 'foo/index');
