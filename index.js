@@ -7,6 +7,8 @@ import path from 'path';
 import process from 'process';
 import {spawnSync} from 'child_process';
 
+const pathSep = new RegExp('\\' + path.sep, 'g');
+
 let modulePath;
 let index;
 let cache;
@@ -14,7 +16,7 @@ let projectPath;
 
 module.exports = function (content, file, settings) {
     if (!modulePath) {
-        module.exports.setRoot(process.cwd(), path.resolve(fis.project.getProjectPath()));
+        module.exports.setRoot(process.cwd(), fis.project.getProjectPath());
     }
     return content
     .replace(/__inlinePackage\(['"](.*)['"]\)/g,
@@ -35,7 +37,7 @@ module.exports.setRoot = function (cwd, pathname) {
     cache = {};
     modulePath = findModulePath(cwd);
     index = packageIndex();
-    projectPath = pathname;
+    projectPath = path.resolve(pathname);
 };
 
 function extractAllFiles(transformer) {
@@ -66,6 +68,7 @@ function extractAll(transformer) {
 }
 
 function extractPackage(id) {
+    id = id.replace(pathSep, '/');
     if (!cache[id]) {
         let entry = getPackageEntry(id);
         let bin = require.resolve('madge/bin/cli');
@@ -94,9 +97,13 @@ function extractPackage(id) {
                 .replace(/\.js$/, '');
                 return {id, relative};
             });
+        let entryFile = path
+            .resolve(modulePath, id + '.js')
+            .replace(projectPath, '')
+            .replace(pathSep, '/');
         files.push({
             id,
-            relative: path.resolve(modulePath, id + '.js').replace(projectPath, '')
+            relative: entryFile
         });
 
         cache[id] = files;
