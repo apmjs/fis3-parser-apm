@@ -1,0 +1,9 @@
+[
+  {
+    "name": "foo",
+    "version": "1.0.0",
+    "filepath": "foo/index.js",
+    "fullpath": "STUB_DIR/multiple-files/amd_modules/foo/index.js"
+  }
+]
+

@@ -1,0 +1,21 @@
+[
+  {
+    "name": "foo",
+    "version": "1.0.0",
+    "filepath": "foo/index.js",
+    "fullpath": "STUB_DIR/multiple/amd_modules/foo/index.js"
+  },
+  {
+    "name": "bar",
+    "version": "2.0.0",
+    "filepath": "bar/src/index.js",
+    "fullpath": "STUB_DIR/multiple/amd_modules/bar/src/index.js"
+  },
+  {
+    "name": "@baidu/bar",
+    "version": "3.0.0",
+    "filepath": "@baidu/bar/index.js",
+    "fullpath": "STUB_DIR/multiple/amd_modules/@baidu/bar/index.js"
+  }
+]
+
