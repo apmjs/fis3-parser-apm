@@ -14,7 +14,7 @@ let projectPath;
 
 module.exports = function (content, file, settings) {
     if (!modulePath) {
-        module.exports.setRoot(process.cwd(), fis.project.getProjectPath());
+        module.exports.setRoot(process.cwd(), path.resolve(fis.project.getProjectPath()));
     }
     return content
     .replace(/__inlinePackage\(['"](.*)['"]\)/g,
