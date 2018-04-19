@@ -91,10 +91,13 @@ function extractPackage(id) {
             .keys(graph)
             .map(file => {
                 let fullpath = path.resolve(dirname, file);
-                let relative = fullpath.replace(projectPath, '');
+                let relative = fullpath
+                .replace(projectPath, '')
+                .replace(pathSep, '/');
                 let id = fullpath.replace(modulePath, '')
                 .replace(/^\//, '')
-                .replace(/\.js$/, '');
+                .replace(/\.js$/, '')
+                .replace(pathSep, '/');
                 return {id, relative};
             });
         let entryFile = path
