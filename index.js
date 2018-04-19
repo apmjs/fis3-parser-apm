@@ -10,13 +10,13 @@ import {spawnSync} from 'child_process';
 const modulePath = findModulePath();
 const index = packageIndex();
 const cache = {};
-const root = fis.project.getProjectPath();
+const root = path.resolve(fis.project.getProjectPath());
 
 module.exports = function (content, file, settings) {
     return content
     .replace(/__inlinePackage\(['"](.*)['"]\)/g,
         (match, id) => extractPackage(id)
-        .map(item => '__inline(' + item.relative + ')')
+        .map(item => `__inline("${item.relative}")`)
         .join('\n')
     )
     .replace(/__AMD_CONFIG/g, () => {
