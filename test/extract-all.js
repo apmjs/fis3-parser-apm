@@ -10,6 +10,7 @@ const STUB_DIR = path.resolve(__dirname, '../stub');
 const originLoadJson = parser.loadJson;
 
 describe('#extractAll', function () {
+    this.timeout(5000);
     before(function () {
         parser.loadJson = file => {
             let json = originLoadJson(file);
