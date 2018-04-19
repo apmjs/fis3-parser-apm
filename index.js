@@ -16,7 +16,7 @@ module.exports = function (content, file, settings) {
     return content
     .replace(/__inlinePackage\(['"](.*)['"]\)/g,
         (match, id) => extractPackage(id)
-        .map(item => '__inline(' + JSON.stringify(item.relative) + ')')
+        .map(item => '__inline(' + item.relative + ')')
         .join('\n')
     )
     .replace(/__AMD_CONFIG/g, () => {
@@ -60,7 +60,7 @@ function extractPackage(id) {
     if (!cache[id]) {
         let entry = getPackageEntry(id);
         let bin = require.resolve('madge/bin/cli');
-        let script = `${bin} ${entry.fullpath} --json`;
+        let script = JSON.stringify(bin) + ' ' + JSON.stringify(entry.fullpath) + ' --json';
         let result = spawnSync('bash', ['-c', script]);
 
         if (result.status === 1) {
