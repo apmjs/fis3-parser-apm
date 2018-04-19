@@ -1,3 +1,6 @@
+[![Travis](https://img.shields.io/travis/apmjs/fis3-parser-apm.svg?logo=travis)](https://travis-ci.org/apmjs/fis3-parser-apm)
+[![AppVeyor](https://img.shields.io/appveyor/ci/apmjs/fis3-parser-apm.svg?logo=appveyor)](https://ci.appveyor.com/project/harttle/fis3-parser-apm)
+
 ## 使用方式
 
 ```bash
