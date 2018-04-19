@@ -1,5 +1,5 @@
 [![Travis](https://img.shields.io/travis/apmjs/fis3-parser-apm.svg?logo=travis)](https://travis-ci.org/apmjs/fis3-parser-apm)
-[![AppVeyor](https://img.shields.io/appveyor/ci/apmjs/fis3-parser-apm.svg?logo=appveyor)](https://ci.appveyor.com/project/harttle/fis3-parser-apm)
+[![Appveyor](https://ci.appveyor.com/api/projects/status/fg49596xj2bc7f3i?svg=true)](https://ci.appveyor.com/project/harttle/fis3-parser-apm)
 
 ## 使用方式
 
