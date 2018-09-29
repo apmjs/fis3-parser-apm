@@ -75,7 +75,7 @@ function extractPackage(id) {
         let result = spawnSync('node', [bin, entry.fullpath, '--json']);
 
         if (result.status === 1) {
-            throw result.error || new Error(String(result.stderr));
+            throw new Error(` ${entry.name}模块的fullpath不见了`);
         }
         let graph;
         let output = String(result.stdout);
