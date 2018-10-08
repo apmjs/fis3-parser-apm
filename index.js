@@ -151,7 +151,12 @@ function packageIndex() {
 }
 
 function loadJson(file) {
-    return JSON.parse(fs.readFileSync(file, 'utf8'));
+    try {
+        var data = _fs2.default.readFileSync(file, 'utf8');
+    } catch (e) {
+        e.message = `${file}该文件路径没有找到，请检查文件对应文件是否正确`;
+        throw e;
+    }
 }
 
 module.exports.extractAll = extractAll;
