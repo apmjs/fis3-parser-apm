@@ -72,15 +72,15 @@ function extractPackage(id) {
     if (!cache[id]) {
         let entry = getPackageEntry(id);
         let bin = require.resolve('madge/bin/cli');
+        if (!entry.fullpath) {
+            throw new Error(`index.json文件下${entry.name}模块的fullpath字段缺失`);
+        }
         let result = spawnSync('node', [bin, entry.fullpath, '--json']);
-
         if (result.status === 1) {
-            if (!entry.fullpath) {
-                throw new Error(`${entry.name}模块的fullpath不见了`);
-            } else if (!entry.filepath) {
-                throw new Error(`${entry.name}模块的filepath不见了`);
+            if (result.stderr) {
+                throw new Error(`未找到${entry.fullpath}对应的文件`)
             }
-            throw result.error || new Error(String(result.stderr));
+            throw result.error || new Error(String(result.stdout));
         }
         let graph;
         let output = String(result.stdout);
@@ -151,12 +151,7 @@ function packageIndex() {
 }
 
 function loadJson(file) {
-    try {
-        var data = _fs2.default.readFileSync(file, 'utf8');
-    } catch (e) {
-        e.message = `${file}该文件路径没有找到，请检查文件对应文件是否正确`;
-        throw e;
-    }
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
 module.exports.extractAll = extractAll;

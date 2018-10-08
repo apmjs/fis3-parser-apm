@@ -35,56 +35,26 @@ __inline("/amd_modules/foo/index.js");
 __inline("/amd_modules/foo/subfolder/dep2.js");
 __inline("/amd_modules/foo.js");`);
     });
+    it('should throw no fullpathFile Error', function () {
+        var cwd = path.resolve(STUB_DIR, 'multiple-nofullpathfile');
+        parser.setRoot(cwd, cwd);
+        let src = '__inlinePackage("foo")';
+        try{
+            let result = parser(src, null, {});
+        }catch(error){
+            expect(error.message).to.equal(`未找到${cwd}/amd_modules/foo/index1.js对应的文件`);
+        }
+    });
 });
 describe('withoutFullpath',function(){
-    before(function () {
-        parser.loadJson = file => {
-            let json = originLoadJson(file);
-            if (file.match(/index.json/)) {
-                json.forEach(entry => {
-                    delete entry.fullpath;
-                });
-            }
-            return json;
-        };
-    });
-    after(function () {
-        parser.loadJson = originLoadJson;
-    });
     it('should throw no fullpath Error', function () {
-        var cwd = path.resolve(STUB_DIR, 'multiple-files');
+        var cwd = path.resolve(STUB_DIR, 'multiple-nofullpath');
         parser.setRoot(cwd, cwd);
         let src = '__inlinePackage("foo")';
         try{
             let result = parser(src, null, {});
         }catch(error){
-            expect(error.message).to.equal(`foo模块的fullpath不见了`);
+            expect(error.message).to.equal(`index.json文件下foo模块的fullpath字段缺失`);
         }
     });
-})
-describe('withoutFilepath',function(){
-    before(function () {
-        parser.loadJson = file => {
-            let json = originLoadJson(file);
-            if (file.match(/index.json/)) {
-                json.forEach(entry => {
-                    delete entry.filepath;
-                });
-            }
-            return json;
-        };
-    });
-    after(function () {
-        parser.loadJson = originLoadJson;
-    });
-    it('should throw no filepath Error', function () {
-        var cwd = path.resolve(STUB_DIR, 'multiple-files');
-        parser.setRoot(cwd, cwd);
-        let src = '__inlinePackage("foo")';
-        try{
-            let result = parser(src, null, {});
-        }catch(error){
-            expect(error.message).to.equal(`foo模块的filepath不见了`);
-        }
-    });
-})
+});
