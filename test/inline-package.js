@@ -40,22 +40,22 @@ __inline("/amd_modules/foo.js");`);
         var cwd = path.resolve(STUB_DIR, 'multiple-nofullpathfile');
         parser.setRoot(cwd, cwd);
         let src = '__inlinePackage("foo")';
-        try{
+        try {
             let result = parser(src, null, {});
-        }catch(error){
-            expect(error.message).to.contains(`no such file or directory`).contains(`index1.js`);
+        } catch (error) {
+            expect(error.message).to.contains('no such file or directory').contains('index1.js');
         }
     });
 });
-describe('withoutFullpath',function(){
+describe('withoutFullpath', function () {
     it('should throw no fullpath Error', function () {
         var cwd = path.resolve(STUB_DIR, 'multiple-nofullpath');
         parser.setRoot(cwd, cwd);
         let src = '__inlinePackage("foo")';
-        try{
+        try {
             let result = parser(src, null, {});
-        }catch(error){
-            expect(error.message).to.equal(`index.json文件下foo模块的fullpath字段缺失`);
+        } catch (error) {
+            expect(error.message).to.equal('index.json文件下foo模块的fullpath字段缺失');
         }
     });
 });
