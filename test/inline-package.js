@@ -42,7 +42,7 @@ __inline("/amd_modules/foo.js");`);
         try{
             let result = parser(src, null, {});
         }catch(error){
-            expect(error.message).to.equal(`未找到${cwd}/amd_modules/foo/index1.js对应的文件`);
+            expect(error.message).to.equal(`\n✖ Error: ENOENT: no such file or directory, stat '${cwd}/amd_modules/foo/index1.js'\n\n`);
         }
     });
 });

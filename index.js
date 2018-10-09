@@ -77,10 +77,7 @@ function extractPackage(id) {
         }
         let result = spawnSync('node', [bin, entry.fullpath, '--json']);
         if (result.status === 1) {
-            if (result.stderr) {
-                throw new Error(`未找到${entry.fullpath}对应的文件`)
-            }
-            throw result.error || new Error(String(result.stdout));
+            throw result.error || new Error(String(result.stderr) || String(result.stdout));
         }
         let graph;
         let output = String(result.stdout);
