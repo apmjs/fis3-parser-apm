@@ -43,7 +43,7 @@ __inline("/amd_modules/foo.js");`);
         try{
             let result = parser(src, null, {});
         }catch(error){
-            expect(error.message).to.contains(`✖ Error: ENOENT: no such file or directory, stat '${cwd}/amd_modules/foo/index1.js'`);
+            expect(error.message).to.contains(`no such file or directory`).contains(`index1.js`);
         }
     });
 });
