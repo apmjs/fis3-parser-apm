@@ -10,6 +10,7 @@ const STUB_DIR = path.resolve(__dirname, '../stub');
 const originLoadJson = parser.loadJson;
 
 describe('__inlinePackage', function () {
+    this.timeout(5000);
     before(function () {
         parser.loadJson = file => {
             let json = originLoadJson(file);
@@ -42,7 +43,7 @@ __inline("/amd_modules/foo.js");`);
         try{
             let result = parser(src, null, {});
         }catch(error){
-            expect(error.message).to.equal(`\n✖ Error: ENOENT: no such file or directory, stat '${cwd}/amd_modules/foo/index1.js'\n\n`);
+            expect(error.message).to.contains(`✖ Error: ENOENT: no such file or directory, stat '${cwd}/amd_modules/foo/index1.js'`);
         }
     });
 });
