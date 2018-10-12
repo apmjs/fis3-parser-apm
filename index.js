@@ -72,10 +72,12 @@ function extractPackage(id) {
     if (!cache[id]) {
         let entry = getPackageEntry(id);
         let bin = require.resolve('madge/bin/cli');
+        if (!entry.fullpath) {
+            throw new Error(`index.json文件下${entry.name}模块的fullpath字段缺失`);
+        }
         let result = spawnSync('node', [bin, entry.fullpath, '--json']);
-
         if (result.status === 1) {
-            throw result.error || new Error(String(result.stderr));
+            throw result.error || new Error(String(result.stderr) || String(result.stdout));
         }
         let graph;
         let output = String(result.stdout);
