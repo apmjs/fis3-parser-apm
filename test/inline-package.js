@@ -26,7 +26,7 @@ describe('__inlinePackage', function () {
         parser.loadJson = originLoadJson;
     });
     it('should __inline the all files required', function () {
-        var cwd = path.resolve(STUB_DIR, 'multiple-files');
+        let cwd = path.resolve(STUB_DIR, 'multiple-files');
         parser.setRoot(cwd, cwd);
         let src = '__inlinePackage("foo")';
         let result = parser(src, null, {});
@@ -37,24 +37,26 @@ __inline("/amd_modules/foo/subfolder/dep2.js");
 __inline("/amd_modules/foo.js");`);
     });
     it('should throw no fullpathFile Error', function () {
-        var cwd = path.resolve(STUB_DIR, 'multiple-nofullpathfile');
+        let cwd = path.resolve(STUB_DIR, 'multiple-nofullpathfile');
         parser.setRoot(cwd, cwd);
         let src = '__inlinePackage("foo")';
         try {
-            let result = parser(src, null, {});
-        } catch (error) {
+            parser(src, null, {});
+        }
+        catch (error) {
             expect(error.message).to.contains('no such file or directory').contains('index1.js');
         }
     });
 });
 describe('withoutFullpath', function () {
     it('should throw no fullpath Error', function () {
-        var cwd = path.resolve(STUB_DIR, 'multiple-nofullpath');
+        let cwd = path.resolve(STUB_DIR, 'multiple-nofullpath');
         parser.setRoot(cwd, cwd);
         let src = '__inlinePackage("foo")';
         try {
-            let result = parser(src, null, {});
-        } catch (error) {
+            parser(src, null, {});
+        }
+        catch (error) {
             expect(error.message).to.equal('index.json文件下foo模块的fullpath字段缺失');
         }
     });
