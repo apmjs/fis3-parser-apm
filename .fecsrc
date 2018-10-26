@@ -1,0 +1,18 @@
+{
+  "eslint": {
+    "env": {
+      "es6": false
+    },
+    "globals": {
+      "Map": false,
+      "Set": false
+    },
+    "rules": {
+      "no-unused-vars": ["error", { "varsIgnorePattern": "debug" }],
+      "fecs-prefer-async-await": "off",
+      "fecs-valid-jsdoc": {
+        "requireFileDescription": false
+      }
+    }
+  }
+}
