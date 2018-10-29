@@ -1,4 +1,4 @@
-import Parser from '../parser';
+import Parser from '../src/parser';
 import path from 'path';
 import {dir, mock, restore} from '../stub';
 import {expect} from 'chai';

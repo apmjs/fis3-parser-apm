@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import Package from './src/package.js';
+import Package from './package.js';
 
 const SEP = new RegExp('\\' + path.sep, 'g');
 let singleton;
