@@ -1,9 +1,0 @@
-[
-  {
-    "name": "foo",
-    "version": "1.0.0",
-    "filepath": "foo/index.js",
-    "fullpath": "STUB_DIR/prefixed/assets/3rd-party/foo/index.js"
-  }
-]
-

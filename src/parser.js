@@ -3,13 +3,12 @@ import path from 'path';
 import Package from './package.js';
 
 const SEP = new RegExp('\\' + path.sep, 'g');
+const defaultPath2url = x => JSON.stringify(x.replace(/\.js$/, ''));
 let singleton;
 
 export default class Parser {
     constructor(projectPath) {
-        this.cache = {};
-        this.modulesPath = this.findModulesPath(projectPath);
-        this.index = this.loadIndex(this.modulesPath);
+        this.modulesPath = this.resolveModulesPath(projectPath);
         this.projectPath = path.resolve(projectPath);
     }
     static create(projectPath) {
@@ -19,64 +18,34 @@ export default class Parser {
         return singleton;
     }
     inlinePackage(id) {
-        return this.extractPackage(id)
-        .map(item => '__inline(' + JSON.stringify(item.relativePath) + ');')
+        let pkg = Package.create(path.resolve(this.modulesPath, id, 'package.json'));
+        return pkg.getFiles()
+        .map(file => this.relativePath(file))
+        .map(path => '__inline(' + JSON.stringify(path) + ');')
         .join('\n');
     }
     amdConfig(path2url) {
-        let lines = this.extractAll(path2url)
-        .map(item => `    '${item.id}': ${item.url}`)
-        .join(',\n');
-        return '{\n' + lines + '\n}';
+        let config = {};
+        path2url = path2url || defaultPath2url;
+        Package.getInstalledPackages(this.modulesPath)
+        .forEach(pkg => pkg.getFiles().forEach(file => {
+            let relativePath = this.relativePath(file);
+            let url = path2url(relativePath).replace(/^"/, '').replace(/"$/, '');
+            let id = this.amdID(file);
+            config[id] = url;
+        }));
+        return JSON.stringify(config, null, 4);
     }
-    extractAllFiles(transformer) {
-        return this.extractAll(transformer).map(item => item.relativePath);
+    relativePath(fullpath) {
+        return fullpath.replace(this.projectPath, '').replace(SEP, '/');
     }
-    extractAll(transformer) {
-        let modules = [];
-        transformer = transformer || (x => JSON.stringify(x.replace(/\.js$/, '')));
-
-        Object
-        .keys(this.index)
-        .forEach(key => this.extractPackage(key)
-            .forEach(item => {
-                item.url = transformer(item.relativePath);
-                modules.push(item);
-            })
-        );
-        return modules;
+    amdID(fullpath) {
+        return fullpath.replace(this.modulesPath, '')
+            .replace(/\.js$/, '')
+            .replace(SEP, '/')
+            .replace(/^\//, '');
     }
-    extractPackage(id) {
-        id = id.replace(SEP, '/');
-        if (this.cache[id]) {
-            return this.cache[id];
-        }
-        let pkg = Package.create(id, this.modulesPath);
-        let mainPath = pkg.mainPath;
-        let dirname = path.dirname(mainPath);
-
-        let files = pkg.getFiles()
-            .map(file => {
-                let fullpath = path.resolve(dirname, file);
-                let relativePath = fullpath
-                .replace(this.projectPath, '')
-                .replace(SEP, '/');
-                let id = fullpath.replace(this.modulesPath, '')
-                .replace(/\.js$/, '')
-                .replace(SEP, '/')
-                .replace(/^\//, '');
-                return {id, relativePath};
-            });
-        let relativePath = path
-            .resolve(this.modulesPath, id + '.js')
-            .replace(this.projectPath, '')
-            .replace(SEP, '/');
-
-        files.push({id, relativePath});
-        this.cache[id] = files;
-        return this.cache[id];
-    }
-    findModulesPath(projectPath) {
+    resolveModulesPath(projectPath) {
         let filepath = this.findPackageJson(projectPath);
         if (!filepath) {
             return path.resolve(projectPath, 'amd_modules');
@@ -95,13 +64,6 @@ export default class Parser {
             return null;
         }
         return this.findPackageJson(parent);
-    }
-    loadIndex(modulesRoot) {
-        let indexPath = path.resolve(modulesRoot, 'index.json');
-        let packages = Package.loadJson(indexPath);
-        let index = {};
-        packages.forEach(pkg => (index[pkg.name] = pkg));
-        return index;
     }
     parse(content, settings) {
         let result = '';

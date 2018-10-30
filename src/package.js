@@ -1,14 +1,21 @@
 import {spawnSync} from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import glob from 'glob';
 
 export default class Package {
-    constructor(name, meta, dir) {
-        this.name = name;
+    constructor(meta, pkgPath) {
         this.meta = meta;
-        this.dir = dir;
+        this.dir = path.dirname(pkgPath);
+        this.name = meta.name || this.nameFromDir(this.dir);
         this.main = this.getMain(meta.main, meta.browser);
-        this.mainPath = path.resolve(dir, this.main);
+        this.mainPath = path.resolve(this.dir, this.main);
+    }
+    nameFromDir(dir) {
+        let name = path.basename(dir);
+        let parent = path.dirname(dir);
+        let scope = path.basename(parent);
+        return scope[0] === '@' ? scope + '/' + name : name;
     }
     getMain(main, browser) {
         main = main || 'index.js';
@@ -33,18 +40,23 @@ export default class Package {
             throw result.error || new Error(String(result.stderr) || String(result.stdout));
         }
         let graph = JSON.parse(String(result.stdout));
-        this.files = Object.keys(graph).map(file => './' + file);
+        let dirname = path.dirname(this.mainPath);
+        this.files = Object.keys(graph).map(file => path.resolve(dirname, file));
+        this.files.push(this.dir + '.js');
         return this.files;
     }
-    static create(name, modulesPath) {
+    static getInstalledPackages(modulesPath) {
+        let files = glob.sync('/{@*/*,*}/package.json', {root: modulesPath});
+        return files.map(file => Package.create(file));
+    }
+    static create(pkgPath) {
         let cache = Package.cache;
-        if (cache[name]) {
-            return cache[name];
+        if (cache[pkgPath]) {
+            return cache[pkgPath];
         }
-        let pkgPath = path.resolve(modulesPath, name);
-        let meta = Package.loadJson(path.resolve(pkgPath, 'package.json'));
-        cache[name] = new Package(name, meta, pkgPath);
-        return cache[name];
+        let meta = Package.loadJson(pkgPath);
+        cache[pkgPath] = new Package(meta, pkgPath);
+        return cache[pkgPath];
     }
     static loadJson(file) {
         return JSON.parse(fs.readFileSync(file, 'utf8'));
