@@ -18,22 +18,21 @@ export default class Parser {
         return singleton;
     }
     inlinePackage(id) {
-        let pkg = Package.create(path.resolve(this.modulesPath, id, 'package.json'));
-        return pkg.getFiles()
-        .map(file => this.relativePath(file))
-        .map(path => '__inline(' + JSON.stringify(path) + ');')
-        .join('\n');
+        let file = path.resolve(this.modulesPath, id) + '.js';
+        let relative = this.relativePath(file);
+        return '__inline(' + JSON.stringify(relative) + ');';
     }
     amdConfig(path2url) {
         let config = {};
         path2url = path2url || defaultPath2url;
-        Package.getInstalledPackages(this.modulesPath)
-        .forEach(pkg => pkg.getFiles().forEach(file => {
+        Package.getInstalledPackageDirs(this.modulesPath)
+        .forEach(dir => {
+            let file = dir + '.js';
             let relativePath = this.relativePath(file);
             let url = path2url(relativePath).replace(/^"/, '').replace(/"$/, '');
             let id = this.amdID(file);
             config[id] = url;
-        }));
+        });
         return JSON.stringify(config, null, 4);
     }
     relativePath(fullpath) {
@@ -65,13 +64,16 @@ export default class Parser {
         }
         return this.findPackageJson(parent);
     }
-    parse(content, settings) {
-        let result = '';
-
-        if (settings.inline) {
+    parse(content, file, settings) {
+        if (settings.package) {
+            let inlines = Package.getDependencies(file.fullname)
+                .filter(fullname => fullname !== file.fullname)
+                .map(file => this.relativePath(file))
+                .map(path => '__inline(' + JSON.stringify(path) + ');');
+            return content + '\n' + inlines.join('\n');
         }
 
-        result += content
+        return content
         .replace(
             /__inlinePackage\(['"](.*)['"]\)/g,
             (match, id) => this.inlinePackage(id)
@@ -80,6 +82,5 @@ export default class Parser {
             /__AMD_CONFIG/g,
             () => this.amdConfig(settings.path2url)
         );
-        return result;
     }
 }

@@ -34,20 +34,22 @@ export default class Package {
         if (this.files) {
             return this.files;
         }
+        this.files = Package.getDependencies(this.mainPath);
+        return this.files;
+    }
+    static getDependencies(entry) {
         let bin = require.resolve('madge/bin/cli');
-        let result = spawnSync('node', [bin, this.mainPath, '--json']);
+        let result = spawnSync('node', [bin, entry, '--json']);
         if (result.status === 1) {
             throw result.error || new Error(String(result.stderr) || String(result.stdout));
         }
         let graph = JSON.parse(String(result.stdout));
-        let dirname = path.dirname(this.mainPath);
-        this.files = Object.keys(graph).map(file => path.resolve(dirname, file));
-        this.files.push(this.dir + '.js');
-        return this.files;
+        let dirname = path.dirname(entry);
+        return Object.keys(graph).map(file => path.resolve(dirname, file));
     }
-    static getInstalledPackages(modulesPath) {
+    static getInstalledPackageDirs(modulesPath) {
         let files = glob.sync('/{@*/*,*}/package.json', {root: modulesPath});
-        return files.map(file => Package.create(file));
+        return files.map(file => path.dirname(file));
     }
     static create(pkgPath) {
         let cache = Package.cache;
