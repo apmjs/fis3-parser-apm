@@ -23,17 +23,16 @@ export default class Parser {
         return '__inline(' + JSON.stringify(relative) + ');';
     }
     amdConfig(path2url) {
-        let config = {};
         path2url = path2url || defaultPath2url;
-        Package.getInstalledPackageDirs(this.modulesPath)
-        .forEach(dir => {
+        let lines = Package.getInstalledPackageDirs(this.modulesPath)
+        .map(dir => {
             let file = dir + '.js';
             let relativePath = this.relativePath(file);
-            let url = path2url(relativePath).replace(/^"/, '').replace(/"$/, '');
+            let url = path2url(relativePath);
             let id = this.amdID(file);
-            config[id] = url;
+            return `    "${id}": ${url}`;
         });
-        return JSON.stringify(config, null, 4);
+        return '{\n' + lines.join(',\n') + '\n}';
     }
     relativePath(fullpath) {
         return fullpath.replace(this.projectPath, '').replace(SEP, '/');
@@ -64,15 +63,37 @@ export default class Parser {
         }
         return this.findPackageJson(parent);
     }
-    parse(content, file, settings) {
-        if (settings.package) {
-            let inlines = Package.getDependencies(file.fullname)
-                .filter(fullname => fullname !== file.fullname)
-                .map(file => this.relativePath(file))
-                .map(path => '__inline(' + JSON.stringify(path) + ');');
-            return content + '\n' + inlines.join('\n');
+    inModules(fullname) {
+        return fullname.indexOf(this.modulesPath) === 0;
+    }
+    isEntryFile(fullname) {
+        if (!this.inModules(fullname)) {
+            return false;
         }
-
+        if (path.extname(fullname) !== '.js') {
+            return false;
+        }
+        let relative = fullname.slice(this.modulesPath.length + 1, -3);
+        let tokens = relative.split('/');
+        if (tokens.length > 2) {
+            return false;
+        }
+        if (tokens.length === 2) {
+            return relative[0] === '@';
+        }
+        return true;
+    }
+    inlineDependencies(entryfile) {
+        let inlines = Package.getDependencies(entryfile)
+            .filter(fullname => fullname !== entryfile)
+            .map(file => this.relativePath(file))
+            .map(path => '__inline(' + JSON.stringify(path) + ');');
+        return inlines.join('\n');
+    }
+    parse(content, file, settings) {
+        if (this.isEntryFile(file.fullname)) {
+            return content + ';\n' + this.inlineDependencies(file.fullname);
+        }
         return content
         .replace(
             /__inlinePackage\(['"](.*)['"]\)/g,

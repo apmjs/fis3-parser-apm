@@ -25,10 +25,10 @@ describe('__AMD_CONFIG', function () {
     });
     it('应该支持 path2url 配置', function () {
         let parser = new Parser(path.resolve(dir, 'simple'));
-        let path2url = x => '"http://example.org/assets' + x.replace('.js', '') + '"';
+        let path2url = x => `__getAMDUri("${x}")`;
         let result = parser.parse('__AMD_CONFIG', {fullname: '/root'}, {path2url});
         expect(result).to.equal(`{
-    "foo": "http://example.org/assets/amd_modules/foo"
+    "foo": __getAMDUri("/amd_modules/foo.js")
 }`);
     });
     it('应该支持 scoped package', function () {
