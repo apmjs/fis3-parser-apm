@@ -17,11 +17,6 @@ export default class Parser {
         }
         return singleton;
     }
-    inlinePackage(id) {
-        let file = path.resolve(this.modulesPath, id) + '.js';
-        let relative = this.relativePath(file);
-        return '__inline(' + JSON.stringify(relative) + ');';
-    }
     amdConfig(path2url) {
         path2url = path2url || defaultPath2url;
         let lines = Package.getInstalledPackageDirs(this.modulesPath)
@@ -73,26 +68,35 @@ export default class Parser {
         if (path.extname(fullname) !== '.js') {
             return false;
         }
+        // fullname: /Users/harttle/test/amd_modules/ralltiir.js
+        // relative: ralltiir
         let relative = fullname.slice(this.modulesPath.length + 1, -3);
         let tokens = relative.split('/');
         if (tokens.length > 2) {
             return false;
         }
         if (tokens.length === 2) {
-            return relative[0] === '@';
+            return relative[0] === '@' ? relative : false;
         }
-        return true;
+        return relative;
     }
-    inlineDependencies(entryfile) {
+    inlinePackage(id) {
+        let file = path.resolve(this.modulesPath, id) + '.js';
+        let relative = this.relativePath(file);
+        return '__inline(' + JSON.stringify(relative) + ');';
+    }
+    inlineDependencies(entryfile, pkgName) {
+        let pkgPath = path.resolve(this.modulesPath, pkgName) + path.sep;
         let inlines = Package.getDependencies(entryfile)
-            .filter(fullname => fullname !== entryfile)
+            .filter(fullname => fullname.indexOf(pkgPath) === 0)
             .map(file => this.relativePath(file))
             .map(path => '__inline(' + JSON.stringify(path) + ');');
         return inlines.join('\n');
     }
     parse(content, file, settings) {
-        if (this.isEntryFile(file.fullname)) {
-            return content + ';\n' + this.inlineDependencies(file.fullname);
+        let pkgName = this.isEntryFile(file.fullname);
+        if (pkgName) {
+            return content + ';\n' + this.inlineDependencies(file.fullname, pkgName);
         }
         return content
         .replace(
