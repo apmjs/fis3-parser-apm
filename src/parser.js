@@ -96,7 +96,7 @@ export default class Parser {
     parse(content, file, settings) {
         let pkgName = this.isEntryFile(file.fullname);
         if (pkgName) {
-            return content + ';\n' + this.inlineDependencies(file.fullname, pkgName);
+            return this.inlineDependencies(file.fullname, pkgName) + '\n;\n' + content;
         }
         return content
         .replace(
