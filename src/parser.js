@@ -17,16 +17,20 @@ export default class Parser {
         }
         return singleton;
     }
-    amdConfig(path2url) {
+    amdConfig(path2url, fileObj) {
         path2url = path2url || defaultPath2url;
         let lines = Package.getInstalledPackageDirs(this.modulesPath)
         .map(dir => {
             let file = dir + '.js';
+            if (fileObj.cache) {
+                fileObj.cache.addDeps(file);
+            }
             let relativePath = this.relativePath(file);
             let url = path2url(relativePath);
             let id = this.amdID(file);
             return `    "${id}": ${url}`;
         });
+
         return '{\n' + lines.join(',\n') + '\n}';
     }
     relativePath(fullpath) {
@@ -105,7 +109,7 @@ export default class Parser {
         )
         .replace(
             /__AMD_CONFIG/g,
-            () => this.amdConfig(settings.path2url)
+            () => this.amdConfig(settings.path2url, file)
         );
     }
 }
