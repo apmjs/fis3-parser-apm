@@ -4,12 +4,20 @@
 ## 使用方式
 
 ```bash
-npm install fis3-parser-apm --save-dev
+npm install --save-dev fis3-parser-apm fis3-hook-amd@0.2.0 fis3-hook-commonjs
 ```
 
 `fis-conf.js` 配置：
 
 ```javascript
+// 启用 AMD hook，编译 amd_modules 下的文件
+fis.hook('amd');
+// 设置 amd_modules 下文件的 ID
+fis.match('/amd_modules/(**).js', {
+    moduleId: '$1',
+    parser: fis.plugin('apm')
+});
+// 包含 __inlinePackage 和 __AMD_CONFIG 的文件，要过 APM praser
 fis.match('**/*.js', {
     parser: fis.plugin('apm')
 });
