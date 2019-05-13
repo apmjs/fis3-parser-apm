@@ -13,15 +13,13 @@ describe('文件打包参数：package', function () {
         let fullname = path.resolve(dir, 'simple/amd_modules/foo.js');
         let content = fs.readFileSync(fullname, 'utf8');
         let result = parser.parse(content, {fullname}, {package: true});
-        expect(result).to.equal(`${content};
-__inline("/amd_modules/foo/index.js");`);
+        expect(result).to.equal(`__inline("/amd_modules/foo/index.js");\n${content};`);
     });
     it('应该支持 scoped package', function () {
         let parser = new Parser(path.resolve(dir, 'multiple'));
         let fullname = path.resolve(dir, 'multiple/amd_modules/@baidu/bar.js');
         let content = fs.readFileSync(fullname, 'utf8');
         let result = parser.parse(content, {fullname}, {package: true});
-        expect(result).equal(`${content};
-__inline("/amd_modules/@baidu/bar/index.js");`);
+        expect(result).equal(`__inline("/amd_modules/@baidu/bar/index.js");\n${content};`);
     });
 });
