@@ -84,28 +84,37 @@ export default class Parser {
         }
         return relative;
     }
-    inlinePackage(id) {
-        let file = path.resolve(this.modulesPath, id) + '.js';
-        let relative = this.relativePath(file);
+    inlinePackage(id, fileObj) {
+        const file = path.resolve(this.modulesPath, id) + '.js';
+        const relative = this.relativePath(file);
+        if (fileObj.cache) {
+            fileObj.cache.addDeps(file);
+        }
         return '__inline(' + JSON.stringify(relative) + ');';
     }
-    inlineDependencies(entryfile, pkgName) {
-        let pkgPath = path.resolve(this.modulesPath, pkgName) + path.sep;
-        let inlines = Package.getDependencies(entryfile)
-            .filter(fullname => fullname.indexOf(pkgPath) === 0)
+    inlineDependencies(entryfile, pkgName, fileObj) {
+        const pkgPath = path.resolve(this.modulesPath, pkgName) + path.sep;
+        const inlines = Package.getDependencies(entryfile)
+            .filter(fullname => fullname.indexOf(pkgPath) === 0);
+
+        if (fileObj.cache) {
+            inlines.forEach(filepath => fileObj.cache.addDeps(filepath));
+        }
+        const text = inlines
             .map(file => this.relativePath(file))
-            .map(path => '__inline(' + JSON.stringify(path) + ');');
-        return inlines.join('\n');
+            .map(path => '__inline(' + JSON.stringify(path) + ');')
+            .join('\n');
+        return text;
     }
     parse(content, file, settings) {
         let pkgName = this.isEntryFile(file.fullname);
         if (pkgName) {
-            return content + ';\n' + this.inlineDependencies(file.fullname, pkgName);
+            return content + ';\n' + this.inlineDependencies(file.fullname, pkgName, file);
         }
         return content
         .replace(
             /__inlinePackage\(['"](.*)['"]\)/g,
-            (match, id) => this.inlinePackage(id)
+            (match, id) => this.inlinePackage(id, file)
         )
         .replace(
             /__AMD_CONFIG/g,
