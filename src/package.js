@@ -52,6 +52,7 @@ export default class Package {
             graph = JSON.parse(stdout);
         }
         catch (e) {
+            /* eslint-disable-next-line */
             console.error('failed to parse dependencies', stdout);
             throw e;
         }
@@ -63,7 +64,7 @@ export default class Package {
         return files.map(file => path.dirname(file));
     }
     static create(dir) {
-        const pkgPath = path.resolve(dir, 'package.json')
+        const pkgPath = path.resolve(dir, 'package.json');
         let cache = Package.cache;
         if (cache[pkgPath]) {
             return cache[pkgPath];
