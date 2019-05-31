@@ -34,7 +34,10 @@ export default class Package {
         if (this.files) {
             return this.files;
         }
-        this.files = Package.getDependencies(this.mainPath);
+        const prefix = this.dir + path.sep;
+        this.files = Package
+            .getDependencies(this.mainPath)
+            .filter(fullname => fullname.indexOf(prefix) === 0);
         return this.files;
     }
     static getDependencies(entry) {
@@ -59,7 +62,8 @@ export default class Package {
         let files = glob.sync('/{@*/*,*}/package.json', {root: modulesPath});
         return files.map(file => path.dirname(file));
     }
-    static create(pkgPath) {
+    static create(dir) {
+        const pkgPath = path.resolve(dir, 'package.json')
         let cache = Package.cache;
         if (cache[pkgPath]) {
             return cache[pkgPath];

@@ -92,10 +92,10 @@ export default class Parser {
         }
         return '__inline(' + JSON.stringify(relative) + ');';
     }
-    inlineDependencies(entryfile, pkgName, fileObj) {
-        const pkgPath = path.resolve(this.modulesPath, pkgName) + path.sep;
-        const inlines = Package.getDependencies(entryfile)
-            .filter(fullname => fullname.indexOf(pkgPath) === 0);
+    inlineDependencies(pkgName, fileObj) {
+        const pkgPath = path.resolve(this.modulesPath, pkgName);
+        const pkg = Package.create(pkgPath);
+        const inlines = pkg.getFiles();
 
         if (fileObj.cache) {
             inlines.forEach(filepath => fileObj.cache.addDeps(filepath));
@@ -109,7 +109,7 @@ export default class Parser {
     parse(content, file, settings) {
         let pkgName = this.isEntryFile(file.fullname);
         if (pkgName) {
-            return this.inlineDependencies(file.fullname, pkgName, file) + '\n' + content + ';';
+            return this.inlineDependencies(pkgName, file) + '\n' + content + ';';
         }
         return content
         .replace(
