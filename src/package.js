@@ -43,7 +43,15 @@ export default class Package {
         if (result.status === 1) {
             throw result.error || new Error(String(result.stderr) || String(result.stdout));
         }
-        let graph = JSON.parse(String(result.stdout));
+        let stdout = String(result.stdout);
+        let graph;
+        try {
+            graph = JSON.parse(stdout);
+        }
+        catch (e) {
+            console.error('failed to parse dependencies', stdout);
+            throw e;
+        }
         let dirname = path.dirname(entry);
         return Object.keys(graph).map(file => path.resolve(dirname, file));
     }
