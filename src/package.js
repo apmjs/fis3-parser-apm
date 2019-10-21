@@ -37,6 +37,9 @@ export default class Package {
         const prefix = this.dir + path.sep;
         this.files = Package
             .getDependencies(this.mainPath)
+            // 当目录下有同名*.d.ts及*.js时，会误获取为*.d.ts文件，临时fix方案为直接replace掉
+            // 长线需要修复依赖包: https://github.com/apmjs/fis3-parser-apm/blob/master/package-lock.json#L6128
+            .map(fullname => fullname.replace(/\.d\.ts$/, '.js'))
             .filter(fullname => fullname.indexOf(prefix) === 0);
         return this.files;
     }
